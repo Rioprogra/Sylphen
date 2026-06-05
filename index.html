@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sylphen — Sistema de Monitoreo Energético</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Lato:wght@300;400;700&family=Lato:ital@1&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   SYLPHEN — DESIGN SYSTEM
+   ========================================================= */
+:root {
+  --bg-deep:       #080c12;
+  --bg-primary:    #0d1520;
+  --bg-surface:    #111d2e;
+  --bg-card:       #152237;
+  --bg-glass:      rgba(21,34,55,0.7);
+  --border:        rgba(255,255,255,0.07);
+  --border-accent: rgba(100,200,160,0.25);
+  --accent:        #4ecba0;
+  --accent-dim:    #2a8c6a;
+  --accent-glow:   rgba(78,203,160,0.15);
+  --gold:          #c8a96e;
+  --gold-dim:      rgba(200,169,110,0.15);
+  --text-primary:  #e8edf5;
+  --text-secondary:#8a9ab5;
+  --text-muted:    #4a5870;
+  --danger:        #e05a5a;
+  --warning:       #e09a40;
+  --font-display:  'Cinzel', serif;
+  --font-body:     'Lato', sans-serif;
+  --radius-sm:     6px;
+  --radius-md:     12px;
+  --radius-lg:     20px;
+  --transition:    0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   SCREENS — router
+   ========================================================= */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* =========================================================
+   SHARED COMPONENTS
+   ========================================================= */
+
+/* --- Grain overlay on all backgrounds --- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* --- Logo mark SVG --- */
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.logo-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+/* --- Navbar (landing) --- */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 20px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(8,12,18,0.95), transparent);
+}
+.navbar-nav {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+.navbar-nav a {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+.navbar-nav a:hover { color: var(--accent); }
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #050d18;
+}
+.btn-primary:hover {
+  background: #6edcb5;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px var(--accent-glow);
+}
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 0.5px solid var(--border-accent);
+}
+.btn-outline:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 0.5px solid var(--border);
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+}
+.btn-full { width: 100%; }
+
+/* --- Form elements --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.form-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.form-input {
+  background: rgba(255,255,255,0.04);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all var(--transition);
+  width: 100%;
+}
+.form-input::placeholder { color: var(--text-muted); }
+.form-input:focus {
+  border-color: var(--accent-dim);
+  background: rgba(78,203,160,0.05);
+  box-shadow: 0 0 0 3px rgba(78,203,160,0.08);
+}
+
+/* --- Card --- */
+.card {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+}
+
+/* --- Divider --- */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 0.5px;
+  background: var(--border);
+}
+
+/* =========================================================
+   SCREEN 1 — INICIO (Landing)
+   ========================================================= */
+#screen-inicio {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated star field */
+.starfield {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--d, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: var(--base-op, 0.4);
+}
+@keyframes twinkle {
+  0%, 100% { opacity: var(--base-op, 0.4); transform: scale(1); }
+  50% { opacity: calc(var(--base-op, 0.4) * 0.3); transform: scale(0.8); }
+}
+
+/* Background gradient orbs */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(78,203,160,0.12), transparent 70%);
+  top: -200px; left: -100px;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.orb-2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(200,169,110,0.08), transparent 70%);
+  bottom: -100px; right: 100px;
+  animation: orbFloat 10s ease-in-out infinite reverse;
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -30px); }
+}
+
+.inicio-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 24px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.inicio-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.inicio-nav-links a {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition);
+  cursor: pointer;
+}
+.inicio-nav-links a:hover { color: var(--accent); }
+.inicio-nav-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 140px 48px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 7vw, 96px);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.4s forwards;
+}
+.hero-title span {
+  display: block;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 60%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: shimmer 4s ease infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-description {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  max-width: 560px;
+  margin-bottom: 52px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s forwards;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  margin-top: 80px;
+  padding-top: 48px;
+  border-top: 0.5px solid var(--border);
+  opacity: 0;
+  animation: fadeUp 0.8s 1s forwards;
+}
+.hero-stat-value {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.hero-stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  letter-spacing: 0.05em;
+}
+
+/* Energy section */
+.energy-section {
+  padding: 80px 56px 100px;
+  position: relative;
+  z-index: 1;
+}
+.section-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.section-tag {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.energy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.energy-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  transition: all var(--transition);
+  cursor: default;
+}
+.energy-card:hover {
+  border-color: var(--border-accent);
+  background: rgba(78,203,160,0.04);
+  transform: translateY(-3px);
+}
+.energy-icon {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  background: var(--accent-glow);
+  border: 0.5px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+.energy-card-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.energy-card-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* Prototype badge */
+.prototype-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--gold-dim);
+  border: 0.5px solid rgba(200,169,110,0.3);
+  border-radius: 999px;
+  padding: 8px 20px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+  animation: fadeUp 0.8s 0.1s both;
+}
+.prototype-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Footer */
+.footer {
+  padding: 32px 56px;
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.footer-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.footer-text span { color: var(--accent); }
+
+/* =========================================================
+   AUTH SCREENS (Login & Registro) — shared layout
+   ========================================================= */
+.auth-screen {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.auth-left {
+  position: relative;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.auth-left-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(78,203,160,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 70%, rgba(200,169,110,0.07) 0%, transparent 50%);
+}
+.auth-left-content {
+  position: relative;
+  z-index: 1;
+  padding: 60px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+.auth-logo-large {
+  width: 100px;
+  height: 100px;
+}
+.auth-brand-name {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+.auth-tagline {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 280px;
+}
+.auth-feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+  text-align: left;
+  width: 100%;
+  max-width: 280px;
+}
+.auth-feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.feature-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.auth-right {
+  background: var(--bg-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  position: relative;
+}
+.auth-form-container {
+  width: 100%;
+  max-width: 400px;
+}
+.auth-form-header {
+  margin-bottom: 40px;
+}
+.auth-form-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.auth-form-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.auth-form-subtitle a {
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+.auth-form-subtitle a:hover { text-decoration: underline; }
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.checkbox-row input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.checkbox-row a { color: var(--accent); text-decoration: none; cursor: pointer; }
+
+.forgot-row {
+  display: flex;
+  justify-content: flex-end;
+}
+.forgot-link {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.forgot-link:hover { color: var(--accent); }
+
+.auth-back {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--transition);
+  text-decoration: none;
+}
+.auth-back:hover { color: var(--accent); }
+.auth-back svg { width: 14px; height: 14px; }
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background: var(--bg-surface);
+  border-right: 0.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 0;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 50;
+}
+.sidebar-logo {
+  padding: 0 24px 28px;
+  border-bottom: 0.5px solid var(--border);
+  margin-bottom: 16px;
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+.sidebar-nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sidebar-nav-item:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+}
+.sidebar-nav-item.active {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 0.5px solid var(--border-accent);
+}
+.sidebar-section-label {
+  padding: 16px 14px 6px;
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.sidebar-bottom {
+  padding: 16px 12px 0;
+  border-top: 0.5px solid var(--border);
+  margin-top: 8px;
+}
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.sidebar-user:hover { background: rgba(255,255,255,0.04); }
+.sidebar-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  border: 0.5px solid var(--border-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.sidebar-user-info { flex: 1; min-width: 0; }
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-user-role {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* Main content */
+.dashboard-main {
+  flex: 1;
+  margin-left: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.dashboard-topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(13,21,32,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 40;
+}
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.1em;
+}
+.topbar-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-badge {
+  background: var(--accent-glow);
+  border: 0.5px solid var(--border-accent);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Dashboard tabs */
+.dashboard-tabs {
+  background: var(--bg-surface);
+  border-bottom: 0.5px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+.dash-tab {
+  padding: 14px 24px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.dash-tab:hover { color: var(--text-secondary); }
+.dash-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Dashboard content */
+.dashboard-content {
+  flex: 1;
+  padding: 32px;
+}
+
+/* Metrics row */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.metric-card {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
+}
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--card-accent, var(--accent));
+  opacity: 0.6;
+}
+.metric-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+}
+.metric-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.metric-label svg { width: 14px; height: 14px; }
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.metric-unit {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 3px;
+}
+.metric-change {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.metric-change.up { color: var(--accent); }
+.metric-change.down { color: var(--danger); }
+
+/* Chart area */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.chart-card {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.chart-title {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.chart-period {
+  display: flex;
+  gap: 4px;
+}
+.period-btn {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all var(--transition);
+}
+.period-btn:hover { background: rgba(255,255,255,0.05); color: var(--text-secondary); }
+.period-btn.active {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 0.5px solid var(--border-accent);
+}
+
+/* SVG Chart placeholder */
+.chart-svg-wrap {
+  width: 100%;
+  position: relative;
+}
+
+/* Donut chart */
+.donut-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.donut-center {
+  text-align: center;
+  margin-top: 8px;
+}
+.donut-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.donut-label-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-value { margin-left: auto; font-weight: 700; color: var(--text-primary); font-size: 13px; }
+
+/* Alerts row */
+.alerts-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition);
+}
+.alert-item:hover { border-color: rgba(255,255,255,0.12); }
+.alert-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+.alert-icon.green { background: var(--accent-glow); color: var(--accent); }
+.alert-icon.warn { background: rgba(224,154,64,0.12); color: var(--warning); }
+.alert-icon.danger { background: rgba(224,90,90,0.12); color: var(--danger); }
+.alert-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.alert-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.alert-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Tab panels */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Dashboard panels for sub-tabs */
+.info-panel, .devices-panel, .nosotros-panel {
+  padding: 0;
+}
+.info-section-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+.info-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.device-card {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  transition: all var(--transition);
+}
+.device-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+}
+.device-icon { font-size: 32px; margin-bottom: 12px; }
+.device-name {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.device-status {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+.device-status.online {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 0.5px solid var(--border-accent);
+}
+.device-status.offline {
+  background: rgba(224,90,90,0.12);
+  color: var(--danger);
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+.team-card {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  text-align: center;
+  transition: all var(--transition);
+}
+.team-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+}
+.team-avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  border: 0.5px solid var(--border-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 auto 12px;
+}
+.team-name {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.team-id {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Energy sub-tab photo + chart */
+.energy-sub-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.energy-photo-placeholder {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 32px;
+}
+.energy-photo-label {
+  font-size: 12px;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<!-- =====================================================
+     SCREEN 1: INICIO (Landing)
+     ===================================================== -->
+<section id="screen-inicio" class="screen active">
+
+  <!-- Starfield & orbs -->
+  <div class="starfield" id="starfield" aria-hidden="true"></div>
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+
+  <!-- Navbar -->
+  <nav class="inicio-nav">
+    <div class="logo-mark" onclick="navigate('screen-inicio')">
+      <svg class="logo-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="38" stroke="rgba(78,203,160,0.3)" stroke-width="0.5"/>
+        <circle cx="40" cy="40" r="30" stroke="rgba(78,203,160,0.15)" stroke-width="0.5"/>
+        <!-- Sun rays -->
+        <line x1="40" y1="4" x2="40" y2="14" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="40" y1="66" x2="40" y2="76" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="4" y1="40" x2="14" y2="40" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="66" y1="40" x2="76" y2="40" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="12.7" y1="12.7" x2="19.8" y2="19.8" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="60.2" y1="60.2" x2="67.3" y2="67.3" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="67.3" y1="12.7" x2="60.2" y2="19.8" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="19.8" y1="60.2" x2="12.7" y2="67.3" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Feminine silhouette -->
+        <ellipse cx="40" cy="28" rx="5" ry="6" fill="#4ecba0" opacity="0.9"/>
+        <path d="M33 42 Q36 36 40 34 Q44 36 47 42 L45 58 Q40 62 35 58 Z" fill="#4ecba0" opacity="0.8"/>
+        <!-- Wind swirl -->
+        <path d="M26 45 Q22 40 26 36 Q32 32 34 38" stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M54 45 Q58 40 54 36 Q48 32 46 38" stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-text">Sylphen</span>
+    </div>
+    <div class="inicio-nav-links">
+      <a onclick="navigate('screen-inicio')">Inicio</a>
+      <a onclick="scrollToEnergy()">Energía</a>
+      <a onclick="navigate('screen-dashboard')">Dashboard</a>
+    </div>
+    <div class="inicio-nav-actions">
+      <button class="btn btn-ghost" onclick="navigate('screen-login')" style="padding:9px 20px;">Iniciar Sesión</button>
+      <button class="btn btn-primary" onclick="navigate('screen-registro')" style="padding:9px 20px;">Registrarse</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <main class="hero" id="hero-section">
+    <div class="prototype-badge">
+      <span class="dot"></span>
+      Prototipo UTCJJ · DSM31
+    </div>
+    <p class="hero-eyebrow">Sistema de Monitoreo y Administración Energética</p>
+    <h1 class="hero-title">
+      Bienvenido a<br><span>Sylphen</span>
+    </h1>
+    <p class="hero-description">
+      Monitorea en tiempo real la generación de energía solar y eólica del kiosco universitario. Visualiza estadísticas, recibe alertas y administra el sistema desde cualquier dispositivo.
+    </p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="navigate('screen-registro')" style="padding:14px 36px; font-size:12px;">
+        Comenzar Ahora
+      </button>
+      <button class="btn btn-outline" onclick="navigate('screen-dashboard')" style="padding:14px 36px; font-size:12px;">
+        Ver Dashboard
+      </button>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-value">85<span style="font-size:18px; color:var(--accent);">W</span></div>
+        <div class="hero-stat-label">Energía Generada</div>
+      </div>
+      <div style="width:0.5px; background:var(--border);"></div>
+      <div>
+        <div class="hero-stat-value">127<span style="font-size:18px; color:var(--accent);">V</span></div>
+        <div class="hero-stat-label">Voltaje Actual</div>
+      </div>
+      <div style="width:0.5px; background:var(--border);"></div>
+      <div>
+        <div class="hero-stat-value">4.1<span style="font-size:18px; color:var(--accent);">A</span></div>
+        <div class="hero-stat-label">Corriente</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Energy section -->
+  <section class="energy-section" id="energy-section">
+    <div class="section-header">
+      <div class="section-tag">Nuestro Prototipo</div>
+      <h2 class="section-title">Fuentes de Energía</h2>
+    </div>
+    <div class="energy-grid">
+      <div class="energy-card">
+        <div class="energy-icon">☀️</div>
+        <div>
+          <div class="energy-card-title">Energía Solar</div>
+          <div class="energy-card-text">Aprovechamos la radiación solar mediante paneles fotovoltaicos para generar electricidad limpia y renovable. Su instalación se monitorea en tiempo real para optimizar el rendimiento energético.</div>
+        </div>
+      </div>
+      <div class="energy-card">
+        <div class="energy-icon">💨</div>
+        <div>
+          <div class="energy-card-title">Energía Eólica</div>
+          <div class="energy-card-text">Utilizamos la fuerza del viento para complementar la generación de energía sostenible. El sistema registra velocidad, producción y eficiencia para maximizar el aprovechamiento del recurso.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-text">© 2026 <span>Sylphen</span> · Universidad Tecnológica de Ciudad Juárez · DSM31</div>
+    <div style="display:flex; gap:24px;">
+      <button class="btn btn-ghost" onclick="navigate('screen-login')" style="padding:8px 18px; font-size:10px;">Iniciar Sesión</button>
+      <button class="btn btn-primary" onclick="navigate('screen-registro')" style="padding:8px 18px; font-size:10px;">Registrarse</button>
+    </div>
+  </footer>
+
+</section>
+
+
+<!-- =====================================================
+     SCREEN 2: REGISTRO
+     ===================================================== -->
+<section id="screen-registro" class="screen">
+  <div class="auth-screen">
+
+    <div class="auth-left">
+      <div class="auth-left-bg"></div>
+      <div class="auth-left-content">
+        <svg class="auth-logo-large" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="40" r="38" stroke="rgba(78,203,160,0.3)" stroke-width="0.5"/>
+          <circle cx="40" cy="40" r="30" stroke="rgba(78,203,160,0.15)" stroke-width="0.5"/>
+          <line x1="40" y1="4" x2="40" y2="14" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="40" y1="66" x2="40" y2="76" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="4" y1="40" x2="14" y2="40" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="66" y1="40" x2="76" y2="40" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12.7" y1="12.7" x2="19.8" y2="19.8" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="60.2" y1="60.2" x2="67.3" y2="67.3" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="67.3" y1="12.7" x2="60.2" y2="19.8" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="19.8" y1="60.2" x2="12.7" y2="67.3" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="40" cy="28" rx="5" ry="6" fill="#4ecba0" opacity="0.9"/>
+          <path d="M33 42 Q36 36 40 34 Q44 36 47 42 L45 58 Q40 62 35 58 Z" fill="#4ecba0" opacity="0.8"/>
+          <path d="M26 45 Q22 40 26 36 Q32 32 34 38" stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M54 45 Q58 40 54 36 Q48 32 46 38" stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="auth-brand-name">Sylphen</div>
+        <div class="auth-tagline">Únete al sistema de monitoreo energético del kiosco universitario UTCJJ.</div>
+        <ul class="auth-feature-list">
+          <li><span class="feature-dot"></span> Monitoreo de energía solar y eólica</li>
+          <li><span class="feature-dot"></span> Dashboard con estadísticas en tiempo real</li>
+          <li><span class="feature-dot"></span> Alertas automáticas del sistema</li>
+          <li><span class="feature-dot"></span> Historial de registros energéticos</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <a class="auth-back" onclick="navigate('screen-inicio')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Volver
+      </a>
+      <div class="auth-form-container">
+        <div class="auth-form-header">
+          <h1 class="auth-form-title">Crear Cuenta</h1>
+          <p class="auth-form-subtitle">¿Ya tienes cuenta? <a onclick="navigate('screen-login')">Inicia sesión aquí</a></p>
+        </div>
+        <form class="auth-form" onsubmit="handleRegister(event)">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Nombre completo</label>
+              <input class="form-input" type="text" placeholder="Tu nombre completo" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Usuario</label>
+              <input class="form-input" type="text" placeholder="@usuario" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo electrónico</label>
+            <input class="form-input" type="email" placeholder="correo@utcjj.edu.mx" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contraseña</label>
+            <input class="form-input" type="password" placeholder="Mínimo 8 caracteres" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmar contraseña</label>
+            <input class="form-input" type="password" placeholder="Repite tu contraseña" required>
+          </div>
+          <label class="checkbox-row">
+            <input type="checkbox" required>
+            Acepto los <a>términos y condiciones</a> del sistema
+          </label>
+          <button type="submit" class="btn btn-primary btn-full" style="padding:14px; font-size:11px; margin-top:4px;">
+            Crear Cuenta
+          </button>
+          <div class="divider">o</div>
+          <button type="button" class="btn btn-ghost btn-full" onclick="navigate('screen-login')" style="padding:12px; font-size:11px;">
+            Ya tengo una cuenta — Iniciar sesión
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- =====================================================
+     SCREEN 3: LOGIN
+     ===================================================== -->
+<section id="screen-login" class="screen">
+  <div class="auth-screen">
+
+    <div class="auth-left">
+      <div class="auth-left-bg"></div>
+      <div class="auth-left-content">
+        <svg class="auth-logo-large" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="40" r="38" stroke="rgba(78,203,160,0.3)" stroke-width="0.5"/>
+          <circle cx="40" cy="40" r="30" stroke="rgba(78,203,160,0.15)" stroke-width="0.5"/>
+          <line x1="40" y1="4" x2="40" y2="14" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="40" y1="66" x2="40" y2="76" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="4" y1="40" x2="14" y2="40" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="66" y1="40" x2="76" y2="40" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12.7" y1="12.7" x2="19.8" y2="19.8" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="60.2" y1="60.2" x2="67.3" y2="67.3" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="67.3" y1="12.7" x2="60.2" y2="19.8" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="19.8" y1="60.2" x2="12.7" y2="67.3" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="40" cy="28" rx="5" ry="6" fill="#4ecba0" opacity="0.9"/>
+          <path d="M33 42 Q36 36 40 34 Q44 36 47 42 L45 58 Q40 62 35 58 Z" fill="#4ecba0" opacity="0.8"/>
+          <path d="M26 45 Q22 40 26 36 Q32 32 34 38" stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M54 45 Q58 40 54 36 Q48 32 46 38" stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="auth-brand-name">Sylphen</div>
+        <div class="auth-tagline">Accede al sistema de monitoreo energético del kiosco universitario.</div>
+        <ul class="auth-feature-list">
+          <li><span class="feature-dot"></span> Datos en tiempo real del kiosco</li>
+          <li><span class="feature-dot"></span> Consulta voltaje y corriente actuales</li>
+          <li><span class="feature-dot"></span> Gestión de alertas del sistema</li>
+          <li><span class="feature-dot"></span> Panel de administración completo</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <a class="auth-back" onclick="navigate('screen-inicio')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Volver
+      </a>
+      <div class="auth-form-container">
+        <div class="auth-form-header">
+          <h1 class="auth-form-title">Hola,</h1>
+          <h2 style="font-family:var(--font-display); font-size:16px; font-weight:400; color:var(--text-secondary); margin-bottom:10px;">Bienvenido a Sylphen</h2>
+          <p class="auth-form-subtitle">¿No tienes cuenta? <a onclick="navigate('screen-registro')">Regístrate aquí</a></p>
+        </div>
+        <form class="auth-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Nombre completo</label>
+            <input class="form-input" type="text" placeholder="Escribe tu nombre completo">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Usuario</label>
+            <input class="form-input" type="text" placeholder="Escribe tu usuario">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input class="form-input" type="password" placeholder="Escribe tu contraseña">
+          </div>
+          <div class="forgot-row">
+            <a class="forgot-link">¿Olvidaste tu contraseña?</a>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" style="padding:14px; font-size:11px;">
+            Iniciar Sesión
+          </button>
+          <div class="divider">o</div>
+          <button type="button" class="btn btn-ghost btn-full" onclick="navigate('screen-registro')" style="padding:12px; font-size:11px;">
+            Crear una cuenta nueva
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- =====================================================
+     SCREEN 4: DASHBOARD
+     ===================================================== -->
+<section id="screen-dashboard" class="screen">
+  <div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark" onclick="navigate('screen-inicio')">
+          <svg class="logo-icon" style="width:32px;height:32px;" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="38" stroke="rgba(78,203,160,0.3)" stroke-width="0.5"/>
+            <line x1="40" y1="4" x2="40" y2="14" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="40" y1="66" x2="40" y2="76" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="4" y1="40" x2="14" y2="40" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="66" y1="40" x2="76" y2="40" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12.7" y1="12.7" x2="19.8" y2="19.8" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="60.2" y1="60.2" x2="67.3" y2="67.3" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="67.3" y1="12.7" x2="60.2" y2="19.8" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="19.8" y1="60.2" x2="12.7" y2="67.3" stroke="#4ecba0" stroke-width="1.5" stroke-linecap="round"/>
+            <ellipse cx="40" cy="28" rx="5" ry="6" fill="#4ecba0" opacity="0.9"/>
+            <path d="M33 42 Q36 36 40 34 Q44 36 47 42 L45 58 Q40 62 35 58 Z" fill="#4ecba0" opacity="0.8"/>
+            <path d="M26 45 Q22 40 26 36 Q32 32 34 38" stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <path d="M54 45 Q58 40 54 36 Q48 32 46 38" stroke="#c8a96e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span class="logo-text" style="font-size:14px;">Sylphen</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Principal</div>
+        <a class="sidebar-nav-item active" onclick="setDashTab('overview')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          General
+        </a>
+        <a class="sidebar-nav-item" onclick="setDashTab('solar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          Energía Solar
+        </a>
+        <a class="sidebar-nav-item" onclick="setDashTab('eolica')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+          Energía Eólica
+        </a>
+        <a class="sidebar-nav-item" onclick="setDashTab('info')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Información
+        </a>
+        <div class="sidebar-section-label">Sistema</div>
+        <a class="sidebar-nav-item" onclick="setDashTab('devices')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          Dispositivos
+        </a>
+        <a class="sidebar-nav-item" onclick="setDashTab('nosotros')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Nosotros
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">MJ</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Mariano J.</div>
+            <div class="sidebar-user-role">Administrador</div>
+          </div>
+          <svg style="width:14px;height:14px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <a class="sidebar-nav-item" style="margin-top:4px;" onclick="navigate('screen-inicio')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Cerrar Sesión
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="dashboard-main">
+      <div class="dashboard-topbar">
+        <div>
+          <div class="topbar-title" id="topbar-title">Panel General</div>
+          <div class="topbar-subtitle">Kiosco UTCJJ · Monitoreo energético</div>
+        </div>
+        <div class="topbar-actions">
+          <div class="topbar-badge">
+            <span class="live-dot"></span>
+            Sistema Activo
+          </div>
+          <button class="btn btn-outline" style="padding:8px 16px; font-size:10px;">
+            Exportar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="dashboard-tabs">
+        <div class="dash-tab active" id="tab-overview" onclick="setDashTab('overview')">General</div>
+        <div class="dash-tab" id="tab-solar" onclick="setDashTab('solar')">Energía Solar</div>
+        <div class="dash-tab" id="tab-eolica" onclick="setDashTab('eolica')">Energía Eólica</div>
+        <div class="dash-tab" id="tab-info" onclick="setDashTab('info')">Información</div>
+        <div class="dash-tab" id="tab-devices" onclick="setDashTab('devices')">Dispositivos</div>
+        <div class="dash-tab" id="tab-nosotros" onclick="setDashTab('nosotros')">Nosotros</div>
+      </div>
+
+      <div class="dashboard-content">
+
+        <!-- TAB: OVERVIEW -->
+        <div class="tab-panel active" id="panel-overview">
+          <div class="metrics-grid">
+            <div class="metric-card" style="--card-accent: #4ecba0;">
+              <div class="metric-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Energía Generada
+              </div>
+              <div class="metric-value">85<span class="metric-unit">W</span></div>
+              <div class="metric-change up">↑ 12% vs ayer</div>
+            </div>
+            <div class="metric-card" style="--card-accent: #c8a96e;">
+              <div class="metric-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                Voltaje Actual
+              </div>
+              <div class="metric-value">127<span class="metric-unit">V</span></div>
+              <div class="metric-change">Rango normal</div>
+            </div>
+            <div class="metric-card" style="--card-accent: #378add;">
+              <div class="metric-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Corriente
+              </div>
+              <div class="metric-value">4.1<span class="metric-unit">A</span></div>
+              <div class="metric-change up">↑ 0.3A vs hora ant.</div>
+            </div>
+            <div class="metric-card" style="--card-accent: #e09a40;">
+              <div class="metric-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                Potencia
+              </div>
+              <div class="metric-value">520<span class="metric-unit">W</span></div>
+              <div class="metric-change up">↑ 8% vs promedio</div>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <!-- Line chart -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Producción de Energía</div>
+                <div class="chart-period">
+                  <button class="period-btn">1H</button>
+                  <button class="period-btn active">24H</button>
+                  <button class="period-btn">7D</button>
+                </div>
+              </div>
+              <div class="chart-svg-wrap">
+                <svg viewBox="0 0 500 180" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible;">
+                  <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#4ecba0" stop-opacity="0.25"/>
+                      <stop offset="100%" stop-color="#4ecba0" stop-opacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="chart2Grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#c8a96e" stop-opacity="0.2"/>
+                      <stop offset="100%" stop-color="#c8a96e" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Grid lines -->
+                  <line x1="0" y1="40" x2="500" y2="40" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <line x1="0" y1="80" x2="500" y2="80" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <line x1="0" y1="120" x2="500" y2="120" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <line x1="0" y1="160" x2="500" y2="160" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                  <!-- Y labels -->
+                  <text x="0" y="44" fill="rgba(138,154,181,0.6)" font-size="10" font-family="Lato">100W</text>
+                  <text x="0" y="84" fill="rgba(138,154,181,0.6)" font-size="10" font-family="Lato">75W</text>
+                  <text x="0" y="124" fill="rgba(138,154,181,0.6)" font-size="10" font-family="Lato">50W</text>
+                  <text x="0" y="164" fill="rgba(138,154,181,0.6)" font-size="10" font-family="Lato">25W</text>
+                  <!-- Solar area -->
+                  <path d="M38 140 L80 120 L120 100 L160 80 L200 60 L240 50 L280 55 L320 65 L360 75 L400 60 L440 55 L480 52 L480 170 L38 170Z" fill="url(#chartGrad)"/>
+                  <!-- Solar line -->
+                  <path d="M38 140 L80 120 L120 100 L160 80 L200 60 L240 50 L280 55 L320 65 L360 75 L400 60 L440 55 L480 52" stroke="#4ecba0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- Wind area -->
+                  <path d="M38 155 L80 148 L120 140 L160 130 L200 110 L240 100 L280 108 L320 120 L360 115 L400 105 L440 110 L480 108 L480 170 L38 170Z" fill="url(#chart2Grad)"/>
+                  <!-- Wind line -->
+                  <path d="M38 155 L80 148 L120 140 L160 130 L200 110 L240 100 L280 108 L320 120 L360 115 L400 105 L440 110 L480 108" stroke="#c8a96e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 2"/>
+                  <!-- Dot current -->
+                  <circle cx="480" cy="52" r="4" fill="#4ecba0"/>
+                  <circle cx="480" cy="52" r="8" fill="#4ecba0" opacity="0.2"/>
+                  <!-- X labels -->
+                  <text x="36" y="178" fill="rgba(138,154,181,0.5)" font-size="9" font-family="Lato" text-anchor="middle">00:00</text>
+                  <text x="120" y="178" fill="rgba(138,154,181,0.5)" font-size="9" font-family="Lato" text-anchor="middle">06:00</text>
+                  <text x="200" y="178" fill="rgba(138,154,181,0.5)" font-size="9" font-family="Lato" text-anchor="middle">12:00</text>
+                  <text x="320" y="178" fill="rgba(138,154,181,0.5)" font-size="9" font-family="Lato" text-anchor="middle">18:00</text>
+                  <text x="480" y="178" fill="rgba(138,154,181,0.5)" font-size="9" font-family="Lato" text-anchor="middle">Ahora</text>
+                </svg>
+                <!-- Legend -->
+                <div style="display:flex; gap:20px; margin-top:12px;">
+                  <div class="legend-item"><span class="legend-dot" style="background:#4ecba0;"></span> Solar</div>
+                  <div class="legend-item"><span class="legend-dot" style="background:#c8a96e;"></span> Eólica</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Donut chart -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Distribución</div>
+              </div>
+              <div class="donut-wrap">
+                <svg viewBox="0 0 140 140" width="140" height="140">
+                  <defs>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                  </defs>
+                  <!-- BG circle -->
+                  <circle cx="70" cy="70" r="52" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="20"/>
+                  <!-- Solar arc ~60% -->
+                  <circle cx="70" cy="70" r="52" fill="none" stroke="#4ecba0" stroke-width="20"
+                    stroke-dasharray="196 130" stroke-dashoffset="0"
+                    stroke-linecap="round" transform="rotate(-90 70 70)" filter="url(#glow)" opacity="0.9"/>
+                  <!-- Wind arc ~40% -->
+                  <circle cx="70" cy="70" r="52" fill="none" stroke="#c8a96e" stroke-width="20"
+                    stroke-dasharray="128 198" stroke-dashoffset="-200"
+                    stroke-linecap="round" transform="rotate(-90 70 70)" opacity="0.8"/>
+                  <text x="70" y="66" text-anchor="middle" fill="#e8edf5" font-size="18" font-weight="700" font-family="Cinzel">85W</text>
+                  <text x="70" y="82" text-anchor="middle" fill="#4a5870" font-size="9" font-family="Lato">total</text>
+                </svg>
+                <div class="donut-legend">
+                  <div class="legend-item">
+                    <span class="legend-dot" style="background:#4ecba0;"></span>
+                    Energía Solar
+                    <span class="legend-value">52W</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot" style="background:#c8a96e;"></span>
+                    Energía Eólica
+                    <span class="legend-value">33W</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alerts -->
+          <div style="margin-bottom:16px;">
+            <div style="font-family:var(--font-display); font-size:10px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px;">Alertas Recientes</div>
+            <div class="alerts-section">
+              <div class="alert-item">
+                <div class="alert-icon green">⚡</div>
+                <div>
+                  <div class="alert-title">Sistema Operativo</div>
+                  <div class="alert-desc">Todos los sensores funcionando correctamente dentro del rango permitido.</div>
+                  <div class="alert-time">Hace 5 min</div>
+                </div>
+              </div>
+              <div class="alert-item">
+                <div class="alert-icon warn">⚠️</div>
+                <div>
+                  <div class="alert-title">Voltaje Bajo</div>
+                  <div class="alert-desc">El voltaje estuvo por debajo del rango permitido (127V) a las 14:31.</div>
+                  <div class="alert-time">Hace 23 min</div>
+                </div>
+              </div>
+              <div class="alert-item">
+                <div class="alert-icon green">☀️</div>
+                <div>
+                  <div class="alert-title">Energía Solar Óptima</div>
+                  <div class="alert-desc">Producción solar en 92% de capacidad. Condiciones climáticas ideales.</div>
+                  <div class="alert-time">Hace 1 hora</div>
+                </div>
+              </div>
+              <div class="alert-item">
+                <div class="alert-icon danger">🔴</div>
+                <div>
+                  <div class="alert-title">Sensor Desconectado</div>
+                  <div class="alert-desc">Sensor ESP32-02 sin respuesta. Verificar conexión de red local.</div>
+                  <div class="alert-time">Hace 3 horas</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: SOLAR -->
+        <div class="tab-panel" id="panel-solar">
+          <div style="margin-bottom:28px;">
+            <div class="info-section-title">Energía Solar</div>
+            <div class="info-text">Aprovechamos la radiación solar mediante paneles fotovoltaicos para generar electricidad limpia y renovable. Su instalación se monitorea en tiempo real para optimizar el rendimiento energético.</div>
+          </div>
+          <div class="energy-sub-content">
+            <div class="energy-photo-placeholder">
+              <span>🌅</span>
+              <span class="energy-photo-label">Panel Solar UTCJJ</span>
+            </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Producción Solar Hoy</div>
+              </div>
+              <svg viewBox="0 0 300 160" fill="none" style="width:100%;">
+                <defs>
+                  <linearGradient id="solarGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#4ecba0" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#4ecba0" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="40" x2="300" y2="40" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <line x1="0" y1="120" x2="300" y2="120" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <path d="M0 150 L30 145 L60 130 L90 100 L120 70 L150 45 L180 40 L210 50 L240 70 L270 100 L300 120 L300 155 L0 155Z" fill="url(#solarGrad)"/>
+                <path d="M0 150 L30 145 L60 130 L90 100 L120 70 L150 45 L180 40 L210 50 L240 70 L270 100 L300 120" stroke="#4ecba0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="180" cy="40" r="4" fill="#4ecba0"/>
+                <circle cx="180" cy="40" r="8" fill="#4ecba0" opacity="0.2"/>
+              </svg>
+              <div style="display:flex; justify-content:space-between; margin-top:12px;">
+                <div class="metric-card" style="flex:1; margin-right:8px; padding:14px 16px;">
+                  <div class="metric-label">Pico</div>
+                  <div class="metric-value" style="font-size:20px;">52<span class="metric-unit">W</span></div>
+                </div>
+                <div class="metric-card" style="flex:1; margin-left:8px; padding:14px 16px;">
+                  <div class="metric-label">Promedio</div>
+                  <div class="metric-value" style="font-size:20px;">38<span class="metric-unit">W</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: EOLICA -->
+        <div class="tab-panel" id="panel-eolica">
+          <div style="margin-bottom:28px;">
+            <div class="info-section-title">Energía Eólica</div>
+            <div class="info-text">Utilizamos la fuerza del viento para complementar la generación de energía sostenible. El sistema registra velocidad, producción y eficiencia del viento para maximizar el aprovechamiento del recurso.</div>
+          </div>
+          <div class="energy-sub-content">
+            <div class="energy-photo-placeholder">
+              <span>💨</span>
+              <span class="energy-photo-label">Turbina Eólica UTCJJ</span>
+            </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Producción Eólica Hoy</div>
+              </div>
+              <svg viewBox="0 0 300 160" fill="none" style="width:100%;">
+                <defs>
+                  <linearGradient id="windGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#c8a96e" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#c8a96e" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="40" x2="300" y2="40" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <line x1="0" y1="120" x2="300" y2="120" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <path d="M0 140 L30 135 L60 125 L90 115 L120 100 L150 90 L180 95 L210 108 L240 100 L270 92 L300 88 L300 155 L0 155Z" fill="url(#windGrad)"/>
+                <path d="M0 140 L30 135 L60 125 L90 115 L120 100 L150 90 L180 95 L210 108 L240 100 L270 92 L300 88" stroke="#c8a96e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 2"/>
+                <circle cx="300" cy="88" r="4" fill="#c8a96e"/>
+              </svg>
+              <div style="display:flex; justify-content:space-between; margin-top:12px;">
+                <div class="metric-card" style="flex:1; margin-right:8px; padding:14px 16px; --card-accent:#c8a96e;">
+                  <div class="metric-label">Velocidad Viento</div>
+                  <div class="metric-value" style="font-size:20px;">14<span class="metric-unit">km/h</span></div>
+                </div>
+                <div class="metric-card" style="flex:1; margin-left:8px; padding:14px 16px; --card-accent:#c8a96e;">
+                  <div class="metric-label">Generación</div>
+                  <div class="metric-value" style="font-size:20px;">33<span class="metric-unit">W</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: INFORMACIÓN -->
+        <div class="tab-panel" id="panel-info">
+          <div class="info-section-title" style="margin-bottom:20px;">Sobre el Proyecto</div>
+          <div class="card" style="margin-bottom:20px;">
+            <div style="font-family:var(--font-display); font-size:13px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); margin-bottom:12px;">Planteamiento del Problema</div>
+            <p class="info-text" style="margin-bottom:0;">En espacios públicos y universitarios con kioscos de generación eólica, los usuarios no cuentan con información clara sobre el estado del sistema, si existe suficiente energía disponible o si el equipo está funcionando correctamente. Esto provoca fallas, interrupciones y pérdida de tiempo al intentar utilizar estaciones sin energía.</p>
+          </div>
+          <div class="card" style="margin-bottom:20px;">
+            <div style="font-family:var(--font-display); font-size:13px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); margin-bottom:12px;">Solución Propuesta</div>
+            <p class="info-text" style="margin-bottom:0;">Sylphen es un sistema de monitoreo y administración energética que permite supervisar variables eléctricas en tiempo real, almacenar información histórica en base de datos externa, y presentar estadísticas en un dashboard web de administración energética del kiosco universitario.</p>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+            <div class="metric-card" style="text-align:center;">
+              <div class="metric-label" style="justify-content:center;">Hardware</div>
+              <div style="font-size:28px; margin:8px 0;">🔌</div>
+              <div style="font-size:12px; color:var(--text-secondary);">Arduino + ESP32<br>+ Sensores</div>
+            </div>
+            <div class="metric-card" style="text-align:center;">
+              <div class="metric-label" style="justify-content:center;">Backend</div>
+              <div style="font-size:28px; margin:8px 0;">☕</div>
+              <div style="font-size:12px; color:var(--text-secondary);">Java + MySQL<br>REST API</div>
+            </div>
+            <div class="metric-card" style="text-align:center;">
+              <div class="metric-label" style="justify-content:center;">Frontend</div>
+              <div style="font-size:28px; margin:8px 0;">🌐</div>
+              <div style="font-size:12px; color:var(--text-secondary);">HTML5 + CSS3<br>Dashboard</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: DISPOSITIVOS -->
+        <div class="tab-panel" id="panel-devices">
+          <div class="info-section-title" style="margin-bottom:20px;">Dispositivos del Sistema</div>
+          <div class="devices-grid">
+            <div class="device-card">
+              <div class="device-icon">📟</div>
+              <div class="device-name">Arduino Uno</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin:6px 0;">Lectura de sensores analógicos</div>
+              <span class="device-status online">En línea</span>
+            </div>
+            <div class="device-card">
+              <div class="device-icon">📡</div>
+              <div class="device-name">ESP32 — Módulo 01</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin:6px 0;">Transmisión WiFi → API</div>
+              <span class="device-status online">En línea</span>
+            </div>
+            <div class="device-card">
+              <div class="device-icon">📡</div>
+              <div class="device-name">ESP32 — Módulo 02</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin:6px 0;">Sensor kiosco eólico</div>
+              <span class="device-status offline">Sin respuesta</span>
+            </div>
+            <div class="device-card">
+              <div class="device-icon">⚡</div>
+              <div class="device-name">Sensor de Voltaje</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin:6px 0;">127V · Rango permitido</div>
+              <span class="device-status online">Activo</span>
+            </div>
+            <div class="device-card">
+              <div class="device-icon">🔋</div>
+              <div class="device-name">Sensor de Corriente</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin:6px 0;">4.1A · Nominal</div>
+              <span class="device-status online">Activo</span>
+            </div>
+            <div class="device-card">
+              <div class="device-icon">💾</div>
+              <div class="device-name">Servidor MySQL</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin:6px 0;">Base de datos local UTCJJ</div>
+              <span class="device-status online">Conectado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: NOSOTROS -->
+        <div class="tab-panel" id="panel-nosotros">
+          <div class="info-section-title" style="margin-bottom:8px;">Equipo de Desarrollo</div>
+          <div class="info-text" style="margin-bottom:28px;">Estudiantes de Desarrollo de Software Multiplataforma · DSM31 · UTCJJ · 2026</div>
+          <div class="team-grid">
+            <div class="team-card">
+              <div class="team-avatar">BL</div>
+              <div class="team-name">Bryan Lagos</div>
+              <div class="team-id">25311741</div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">MR</div>
+              <div class="team-name">Michelle Ramírez</div>
+              <div class="team-id">25311756</div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">DR</div>
+              <div class="team-name">David Ríos</div>
+              <div class="team-id">25311764</div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">ES</div>
+              <div class="team-name">Emmanuel Salcido</div>
+              <div class="team-id">25311752</div>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">KV</div>
+              <div class="team-name">Kevin Vázquez</div>
+              <div class="team-id">25311734</div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:24px; text-align:center;">
+            <div style="font-family:var(--font-display); font-size:12px; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;">Docente</div>
+            <div style="font-family:var(--font-display); font-size:18px; font-weight:600; color:var(--text-primary);">Mariano Salomón Christian Jahaziel</div>
+            <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Programación Orientada a Objetos · UTCJJ</div>
+          </div>
+        </div>
+
+      </div><!-- /dashboard-content -->
+    </main>
+  </div>
+</section>
+
+
+<script>
+/* =====================================================
+   NAVIGATION ROUTER
+   ===================================================== */
+function navigate(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+}
+
+function scrollToEnergy() {
+  navigate('screen-inicio');
+  setTimeout(() => {
+    document.getElementById('energy-section')?.scrollIntoView({ behavior: 'smooth' });
+  }, 50);
+}
+
+/* =====================================================
+   DASHBOARD TAB SWITCHER
+   ===================================================== */
+const tabTitles = {
+  overview: 'Panel General',
+  solar: 'Energía Solar',
+  eolica: 'Energía Eólica',
+  info: 'Información del Proyecto',
+  devices: 'Dispositivos del Sistema',
+  nosotros: 'Equipo de Desarrollo'
+};
+
+function setDashTab(tab) {
+  // Update sidebar items
+  document.querySelectorAll('.sidebar-nav-item').forEach(el => el.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+
+  // Update top tabs
+  document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
+  const topTab = document.getElementById('tab-' + tab);
+  if (topTab) topTab.classList.add('active');
+
+  // Update panels
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+  const panel = document.getElementById('panel-' + tab);
+  if (panel) panel.classList.add('active');
+
+  // Update topbar title
+  document.getElementById('topbar-title').textContent = tabTitles[tab] || 'Dashboard';
+}
+
+// Period buttons
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    this.closest('.chart-period').querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+/* =====================================================
+   STARFIELD GENERATOR
+   ===================================================== */
+function generateStars() {
+  const sf = document.getElementById('starfield');
+  if (!sf) return;
+  const count = 120;
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2 + 0.5;
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+    const duration = (Math.random() * 4 + 2).toFixed(1);
+    const delay = (Math.random() * 6).toFixed(1);
+    const opacity = (Math.random() * 0.5 + 0.1).toFixed(2);
+    star.style.cssText = `width:${size}px;height:${size}px;left:${x}%;top:${y}%;--d:${duration}s;--delay:-${delay}s;--base-op:${opacity};`;
+    sf.appendChild(star);
+  }
+}
+generateStars();
+
+/* =====================================================
+   FORM HANDLERS (visual only)
+   ===================================================== */
+function handleLogin(e) {
+  e.preventDefault();
+  navigate('screen-dashboard');
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  navigate('screen-login');
+}
+
+/* =====================================================
+   ANIMATED COUNTER (metrics)
+   ===================================================== */
+function animateValue(el, from, to, unit, duration) {
+  let start = null;
+  function step(timestamp) {
+    if (!start) start = timestamp;
+    const progress = Math.min((timestamp - start) / duration, 1);
+    const value = Math.floor(from + (to - from) * progress);
+    el.innerHTML = value + '<span class="metric-unit">' + unit + '</span>';
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// Animate on dashboard enter
+const dashObs = new MutationObserver(() => {
+  if (document.getElementById('screen-dashboard').classList.contains('active')) {
+    const vals = [
+      { id: null, from: 0, to: 85, unit: 'W' },
+    ];
+  }
+});
+</script>
+
+</body>
+</html>
