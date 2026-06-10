@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sylphen — Sistema Energético</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Barlow:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- =====================================================
+     SIDEBAR OVERLAY + DRAWER
+     ===================================================== -->
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+<aside id="sidebar" class="sidebar" aria-hidden="true">
+  <div class="sidebar-top">
+    <div class="sidebar-logo-row">
+      <img id="sidebar-logo-img" class="sidebar-logo-img" src="" alt="Sylphen">
+      <span class="sidebar-logo-text">Sylphen</span>
+    </div>
+  </div>
+  <nav id="sidebar-nav" class="sidebar-nav"></nav>
+  <div class="sidebar-bottom">
+    <button class="sidebar-logout" id="btn-logout" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<!-- =====================================================
+     PANTALLA P1 — INICIO PÚBLICO
+     ===================================================== -->
+<section id="screen-inicio" class="screen screen-foto active">
+  <div class="foto-overlay"></div>
+  <div class="inicio-content">
+    <img id="inicio-logo" class="inicio-logo" src="" alt="Sylphen">
+    <h1 class="inicio-wordmark">SYLPHEN</h1>
+    <div class="inicio-status" id="inicio-status">
+      <span class="status-dot" id="inicio-dot"></span>
+      <span id="inicio-status-text">Sistema activo</span>
+    </div>
+    <div class="inicio-battery" id="inicio-battery">
+      <span class="inicio-battery-label">Batería disponible</span>
+      <span class="inicio-battery-pct" id="inicio-bat-pct">78%</span>
+    </div>
+    <button class="btn-pill" id="btn-inicio" type="button">INICIO</button>
+  </div>
+</section>
+
+<!-- =====================================================
+     PANTALLA P2 — AUTH (Registro + Login)
+     ===================================================== -->
+<section id="screen-auth" class="screen screen-foto">
+  <div class="foto-overlay foto-overlay--auth"></div>
+  <div class="auth-layout">
+
+    <!-- Panel izquierdo: solo fondo visible -->
+    <div class="auth-left"></div>
+
+    <!-- Panel derecho: card flotante -->
+    <div class="auth-right">
+      <div class="auth-card">
+        <!-- Logo esquina superior derecha -->
+        <img id="auth-logo" class="auth-logo-corner" src="" alt="Sylphen">
+
+        <div class="auth-header">
+          <p class="auth-greeting">Hola!</p>
+          <p class="auth-sub">Bienvenido a Sylphen</p>
+        </div>
+
+        <div class="auth-forms-row">
+          <!-- Columna Registro -->
+          <div class="auth-col">
+            <div class="form-group">
+              <label class="form-label">Nombre</label>
+              <p class="form-hint">Tu nombre completo</p>
+              <input class="form-input" id="reg-nombre" type="text" placeholder="Tu nombre completo">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Usuario</label>
+              <p class="form-hint">Escribe tu usuario aquí</p>
+              <input class="form-input" id="reg-usuario" type="text" placeholder="Escribe tu usuario aquí">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <p class="form-hint">Escribe tu contraseña aquí</p>
+              <input class="form-input" id="reg-pass" type="password" placeholder="Escribe tu contraseña aquí">
+            </div>
+            <button class="btn-pill btn-pill--sm" id="btn-registrar" type="button">REGISTRAR</button>
+          </div>
+
+          <!-- Divisor vertical -->
+          <div class="auth-divider"></div>
+
+          <!-- Columna Login -->
+          <div class="auth-col">
+            <div class="form-group">
+              <label class="form-label">Usuario</label>
+              <p class="form-hint">Escribe tu usuario aquí</p>
+              <input class="form-input" id="log-usuario" type="text" placeholder="Escribe tu usuario aquí">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <p class="form-hint">Escribe tu contraseña aquí</p>
+              <input class="form-input" id="log-pass" type="password" placeholder="Escribe tu contraseña aquí">
+            </div>
+            <button class="btn-pill btn-pill--sm" id="btn-login" type="button">INICIAR SESIÓN</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     PANTALLA DASHBOARD (P3–P8 con tabs)
+     ===================================================== -->
+<section id="screen-dashboard" class="screen">
+
+  <!-- Topbar -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button class="btn-hamburger" id="btn-hamburger" type="button" aria-label="Menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-info">
+        <span class="topbar-title">Bienvenido a Sylphen</span>
+        <div class="topbar-user-row">
+          <div class="topbar-avatar" id="topbar-avatar">MJ</div>
+          <span class="topbar-username" id="topbar-username">Mariano Salomón Cristian Jahaziel</span>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-online" id="topbar-online">
+        <span class="status-dot" id="topbar-dot"></span>
+        <span id="topbar-status-text" class="topbar-status-text">En línea</span>
+      </div>
+      <div class="topbar-bell-wrap">
+        <button class="btn-bell" id="btn-bell" type="button" aria-label="Alertas">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="bell-badge hidden" id="bell-badge">2</span>
+        </button>
+      </div>
+      <div class="topbar-logo-wrap">
+        <img id="topbar-logo" class="topbar-logo" src="" alt="Sylphen">
+        <span class="topbar-logo-name">SYLPHEN</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabs de navegación -->
+  <nav class="nav-tabs" id="nav-tabs"></nav>
+
+  <!-- Banner alerta crítica -->
+  <div id="critical-banner" class="critical-banner hidden">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <span id="banner-text">Alerta crítica activa</span>
+    <button id="btn-banner-alerts" type="button">Ver alertas</button>
+    <button id="btn-banner-close" type="button" aria-label="Cerrar">✕</button>
+  </div>
+
+  <!-- Contenido -->
+  <main class="dash-content" id="dash-content">
+
+    <!-- TAB: Batería (P3) -->
+    <div id="panel-bateria" class="tab-panel active">
+      <div class="battery-hero">
+        <p class="hero-label" id="bat-section-label">Nivel de batería 18650</p>
+        <div class="hero-pct-wrap">
+          <span class="hero-pct" id="bat-pct">78</span>
+          <span class="hero-pct-sym">%</span>
+        </div>
+        <span class="state-badge" id="bat-badge">Cargando</span>
+        <div class="bat-bar-bg">
+          <div class="bat-bar-fill" id="bat-bar"></div>
+        </div>
+        <div class="bat-meta-row">
+          <span id="bat-voltage">3.89 V</span>
+          <span class="meta-sep">·</span>
+          <span id="bat-time">~1h 24m para completar</span>
+          <span class="meta-sep">·</span>
+          <span id="bat-reading">hace 8s</span>
+        </div>
+      </div>
+
+      <!-- Alertas recientes en dashboard -->
+      <div class="dash-alerts-card" id="dash-alerts-card">
+        <p class="card-label">Alertas recientes</p>
+        <div id="dash-alerts-list"></div>
+        <button class="card-footer-link" id="btn-ver-alertas" type="button">
+          Ver todas las alertas
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB: Generación (P4) -->
+    <div id="panel-generacion" class="tab-panel">
+      <div class="gen-hero">
+        <p class="hero-label">Generando ahora</p>
+        <div class="gen-pct-wrap">
+          <span class="gen-watts" id="gen-watts">4.8</span>
+          <span class="gen-unit">W</span>
+        </div>
+        <span class="state-badge" id="gen-badge">Activo</span>
+      </div>
+      <div class="gen-cards">
+        <div class="gen-card">
+          <p class="card-label">Energía hoy</p>
+          <p class="gen-card-value"><span id="gen-kwh">0.31</span><span class="gen-card-unit"> kWh</span></p>
+          <p class="gen-card-sub" id="gen-kwh-sub">↑ +12% vs ayer</p>
+        </div>
+        <div class="gen-card">
+          <p class="card-label">Voltaje actual</p>
+          <p class="gen-card-value"><span id="gen-volt">3.89</span><span class="gen-card-unit"> V</span></p>
+          <p class="gen-card-sub">INA226</p>
+        </div>
+      </div>
+      <div class="chart-card">
+        <p class="card-label" style="margin-bottom:14px;">Producción últimas 12 horas</p>
+        <div class="chart-wrap" id="chart-wrap">
+          <svg id="bar-chart" class="bar-chart" viewBox="0 0 480 120" preserveAspectRatio="none"></svg>
+          <div class="chart-labels" id="chart-labels"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Alertas (P6) -->
+    <div id="panel-alertas" class="tab-panel">
+      <div class="alerts-filters" id="alerts-filters">
+        <button class="filter-pill active" data-filter="todas" type="button">Todas</button>
+        <button class="filter-pill" data-filter="critica" type="button">Críticas</button>
+        <button class="filter-pill" data-filter="advertencia" type="button">Advertencias</button>
+        <button class="filter-pill" data-filter="informativa" type="button">Informativas</button>
+      </div>
+      <div class="alerts-full-list" id="alerts-full-list"></div>
+    </div>
+
+    <!-- TAB: Historial (P7 — admin) -->
+    <div id="panel-historial" class="tab-panel">
+      <div class="hist-controls">
+        <div class="hist-dates">
+          <input class="form-input" type="date" id="hist-from" value="2026-06-01">
+          <span class="meta-sep">→</span>
+          <input class="form-input" type="date" id="hist-to" value="2026-06-09">
+        </div>
+        <button class="btn-export" id="btn-export" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+      <div class="hist-table-wrap">
+        <table class="hist-table" id="hist-table">
+          <thead>
+            <tr><th>Fecha</th><th>Energía generada</th><th>Voltaje prom.</th><th>Estado</th></tr>
+          </thead>
+          <tbody id="hist-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: Dispositivos (P8 — admin) -->
+    <div id="panel-dispositivos" class="tab-panel">
+      <div class="devices-grid" id="devices-grid"></div>
+      <p class="devices-timestamp" id="devices-timestamp">Última actualización hace 8s</p>
+    </div>
+
+  </main>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>
