@@ -32,24 +32,19 @@ const BASE_DATA = {
   energia_hoy_kwh: 0.31, bateria_pct: 78,
   bateria_estado: 'cargando', bateria_tiempo_min: 84,
   esp32_online: true, lectura_seg: 8,
-  alertas_no_leidas: 2, var_energia_pct: 12,
-  alertas: [
-    { id:1, tipo:'critica',     titulo:'Batería crítica',           desc:'Voltaje por debajo de 3.1 V · 06:42',          tiempo:'Hace 3h' },
-    { id:2, tipo:'advertencia', titulo:'Sin generación detectada',  desc:'INA226 sin corriente de carga · 18:30–19:10', tiempo:'Hace 5h' },
-    { id:3, tipo:'informativa', titulo:'Sistema en línea',          desc:'ESP32 reconectado · datos recibidos normalmente', tiempo:'Hace 6h' },
-  ],
+  var_energia_pct: 12,
 };
 
 const HIST_DATA = [
-  { fecha:'09/06/2026', kwh:'0.31', v:'3.89', estado:'ok' },
-  { fecha:'08/06/2026', kwh:'0.28', v:'3.85', estado:'ok' },
-  { fecha:'07/06/2026', kwh:'0.04', v:'3.21', estado:'warn' },
-  { fecha:'06/06/2026', kwh:'0.33', v:'3.90', estado:'ok' },
-  { fecha:'05/06/2026', kwh:'0.29', v:'3.87', estado:'ok' },
-  { fecha:'04/06/2026', kwh:'0.00', v:'3.05', estado:'err' },
-  { fecha:'03/06/2026', kwh:'0.35', v:'3.91', estado:'ok' },
-  { fecha:'02/06/2026', kwh:'0.26', v:'3.82', estado:'ok' },
-  { fecha:'01/06/2026', kwh:'0.30', v:'3.88', estado:'ok' },
+  { fecha:'09/06/2026 14:32', v:'3.89', c:'1.24', w:'4.83', pct:78 },
+  { fecha:'09/06/2026 10:15', v:'3.85', c:'1.18', w:'4.54', pct:72 },
+  { fecha:'08/06/2026 16:40', v:'3.91', c:'1.31', w:'5.12', pct:85 },
+  { fecha:'08/06/2026 09:05', v:'3.78', c:'0.98', w:'3.70', pct:55 },
+  { fecha:'07/06/2026 15:20', v:'3.21', c:'0.42', w:'1.35', pct:18 },
+  { fecha:'07/06/2026 08:00', v:'3.90', c:'1.28', w:'4.99', pct:80 },
+  { fecha:'06/06/2026 13:45', v:'3.88', c:'1.22', w:'4.73', pct:76 },
+  { fecha:'05/06/2026 11:30', v:'3.05', c:'0.10', w:'0.30', pct:5  },
+  { fecha:'04/06/2026 17:00', v:'3.92', c:'1.35', w:'5.29', pct:88 },
 ];
 
 const CHART_HOURS = [
@@ -64,22 +59,14 @@ const S = {
   screen: 'inicio',
   tab: 'bateria',
   sidebar: false,
-  bannerDismissed: false,
-  filter: 'todas',
   pollTimer: null,
   data: null,
 };
 
-/* ---- TABS POR ROL ---- */
-const TABS_USER  = [
-  { id:'bateria',    label:'Batería' },
-  { id:'generacion', label:'Generación' },
-  { id:'alertas',    label:'Alertas' },
-];
-const TABS_ADMIN = [
+/* ---- TABS (ambos roles ven las mismas 4 pantallas) ---- */
+const TABS = [
   { id:'bateria',     label:'Batería' },
   { id:'generacion',  label:'Generación' },
-  { id:'alertas',     label:'Alertas' },
   { id:'historial',   label:'Historial' },
   { id:'dispositivos',label:'Dispositivos' },
 ];
@@ -208,11 +195,10 @@ function renderUserInfo() {
    TABS
    ============================================================ */
 function buildTabs() {
-  const tabs = USER.rol==='administrador' ? TABS_ADMIN : TABS_USER;
   const nav = $('nav-tabs');
   if (!nav) return;
   nav.innerHTML = '';
-  tabs.forEach(t => {
+  TABS.forEach(t => {
     const btn = document.createElement('button');
     btn.className = `nav-tab${S.tab===t.id?' active':''}`;
     btn.id = `nav-tab-${t.id}`;
@@ -240,18 +226,16 @@ function switchTab(id) {
    SIDEBAR
    ============================================================ */
 function buildSidebarNav() {
-  const tabs = USER.rol==='administrador' ? TABS_ADMIN : TABS_USER;
   const nav = $('sidebar-nav');
   if (!nav) return;
-  nav.innerHTML = '';
   const ICONS = {
     bateria:     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v3"/></svg>',
     generacion:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
-    alertas:     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
     historial:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
     dispositivos:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
   };
-  tabs.forEach(t => {
+  nav.innerHTML = '';
+  TABS.forEach(t => {
     const btn = document.createElement('button');
     btn.id = `snav-${t.id}`;
     btn.className = `sidebar-nav-btn${S.tab===t.id?' active':''}`;
@@ -280,10 +264,12 @@ function toggleDrawer() {
 function poll() {
   if (CFG.USE_API) {
     fetch(CFG.API_URL, { headers:{ Authorization:`Bearer ${localStorage.getItem('sylphen_token')||''}` } })
-      .then(r=>r.json()).then(d=>actualizarDashboard(d))
-      .catch(()=>actualizarDashboard({...BASE_DATA,esp32_online:false}));
+      .then(r=>r.json()).then(d=>{ actualizarDashboard(d); initInicio(); })
+      .catch(()=>{ actualizarDashboard({...BASE_DATA,esp32_online:false}); initInicio(); });
   } else {
-    actualizarDashboard(simVariation());
+    const d = simVariation();
+    actualizarDashboard(d);
+    initInicio();
   }
 }
 
@@ -295,17 +281,43 @@ function simVariation() {
 }
 
 /* ============================================================
+   computeAlerts() — genera alertas dinámicas desde el estado real
+   Alimenta LECTURA_ENERGIA: sin tabla ALERTA en BD
+   ============================================================ */
+function computeAlerts(data) {
+  const alerts = [];
+  if (!data.esp32_online) {
+    alerts.push({ tipo:'critica', titulo:'Sin conexión', desc:'ESP32 no responde · Verificar red WiFi' });
+    return alerts;
+  }
+  if (data.bateria_pct <= 15) {
+    alerts.push({ tipo:'critica', titulo:'Batería crítica', desc:`Nivel en ${Math.round(data.bateria_pct)}% · Carga insuficiente` });
+  }
+  if (data.voltaje < CFG.V_MIN || data.voltaje > CFG.V_MAX) {
+    const dir = data.voltaje < CFG.V_MIN ? 'bajo' : 'alto';
+    alerts.push({ tipo:'critica', titulo:`Voltaje ${dir}`, desc:`${fmt(data.voltaje)} V · Rango permitido 3.0–4.2 V` });
+  }
+  if (data.corriente === 0 && data.esp32_online) {
+    alerts.push({ tipo:'advertencia', titulo:'Sin generación detectada', desc:'INA226 registra 0 A · Panel y generador sin aporte' });
+  }
+  if (data.bateria_pct >= 100) {
+    alerts.push({ tipo:'informativa', titulo:'Batería completa', desc:'Nivel al 100% · Sistema en pleno rendimiento' });
+  }
+  if (alerts.length === 0) {
+    alerts.push({ tipo:'informativa', titulo:'Sistema operando normalmente', desc:`${fmt(data.voltaje)} V · ${fmt(data.corriente,2)} A · ${Math.round(data.bateria_pct)}% batería` });
+  }
+  return alerts;
+}
+
+/* ============================================================
    actualizarDashboard()
    ============================================================ */
 function actualizarDashboard(data) {
   S.data = data;
   const sin = !data.esp32_online;
-  renderTopbarStatus(data.esp32_online, data.alertas_no_leidas);
+  renderTopbarStatus(data.esp32_online);
   renderBattery(data, sin);
   renderGeneration(data, sin);
-  renderAlerts(data.alertas||[]);
-  renderCriticalBanner(data.alertas||[]);
-  initInicio();
 }
 
 /* ============================================================
@@ -343,46 +355,19 @@ function renderBattery(data, sin) {
   }
   const br = $('bat-reading');    if (br)  br.textContent  = sin ? 'Sin señal del ESP32' : `hace ${data.lectura_seg}s`;
 
-  renderDashAlerts(data.alertas||[]);
+  /* Alertas dinámicas calculadas desde el estado actual */
+  renderDashAlerts(computeAlerts(data));
 }
 
 /* ============================================================
-   renderAlerts() — lista completa tab Alertas
+   renderDashAlerts() — alertas dinámicas en el dashboard
+   Calculadas por computeAlerts(), sin tabla en BD
    ============================================================ */
-function renderAlerts(alertas) {
-  renderDashAlerts(alertas);
-  const list = $('alerts-full-list');
-  if (!list) return;
-  const filtered = S.filter==='todas' ? alertas : alertas.filter(a=>a.tipo===S.filter);
-  list.innerHTML = '';
-  if (!filtered.length) {
-    list.innerHTML = '<p class="alerts-empty">Sin alertas en esta categoría</p>';
-    return;
-  }
-  filtered.forEach(a => {
-    const row = document.createElement('div');
-    row.className = 'alert-row';
-    row.innerHTML = `
-      <div class="alert-dot ${a.tipo}"></div>
-      <div class="alert-body">
-        <p class="alert-title">${a.titulo}</p>
-        <p class="alert-desc">${a.desc}</p>
-      </div>
-      <span class="alert-time">${a.tiempo}</span>`;
-    list.appendChild(row);
-  });
-}
-
 function renderDashAlerts(alertas) {
   const list = $('dash-alerts-list');
   if (!list) return;
-  const show = alertas.slice(0,3);
   list.innerHTML = '';
-  if (!show.length) {
-    list.innerHTML = '<p class="alerts-empty">Sin alertas recientes</p>';
-    return;
-  }
-  show.forEach(a => {
+  alertas.forEach(a => {
     const row = document.createElement('div');
     row.className = 'alert-row';
     row.innerHTML = `
@@ -390,8 +375,7 @@ function renderDashAlerts(alertas) {
       <div class="alert-body">
         <p class="alert-title">${a.titulo}</p>
         <p class="alert-desc">${a.desc}</p>
-      </div>
-      <span class="alert-time">${a.tiempo}</span>`;
+      </div>`;
     list.appendChild(row);
   });
 }
@@ -457,20 +441,24 @@ function renderBarChart() {
 }
 
 /* ============================================================
-   renderHistorial()
+   renderHistorial() — tabla LECTURA_ENERGIA
    ============================================================ */
 function renderHistorial() {
   const tbody = $('hist-tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
   HIST_DATA.forEach(row => {
-    const stCls = {ok:'status-ok',warn:'status-warn',err:'status-err'}[row.estado]||'';
-    const stLabel = {ok:'Normal',warn:'Advertencia',err:'Error'}[row.estado]||'—';
+    const batPct = row.pct;
+    let stCls, stLabel;
+    if (batPct <= 15)       { stCls='status-err';  stLabel=`${batPct}% ⚠`; }
+    else if (batPct <= 30)  { stCls='status-warn'; stLabel=`${batPct}%`; }
+    else                    { stCls='status-ok';   stLabel=`${batPct}%`; }
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${row.fecha}</td>
-      <td>${row.kwh} kWh</td>
       <td>${row.v} V</td>
+      <td>${row.c} A</td>
+      <td>${row.w} W</td>
       <td><span class="${stCls}">${stLabel}</span></td>`;
     tbody.appendChild(tr);
   });
@@ -516,34 +504,30 @@ function devIcon(type) {
 }
 
 /* ============================================================
-   renderTopbarStatus() & renderCriticalBanner()
+   renderTopbarStatus()
    ============================================================ */
-function renderTopbarStatus(online, noLeidas) {
+function renderTopbarStatus(online) {
   const dot = $('topbar-dot'), txt = $('topbar-status-text');
   if (dot) dot.classList.toggle('offline', !online);
   if (txt) txt.textContent = online ? 'En línea' : 'Sin conexión';
-  const badge = $('bell-badge');
-  if (badge) { badge.textContent = noLeidas; badge.classList.toggle('hidden', !noLeidas); }
-}
-
-function renderCriticalBanner(alertas) {
-  if (S.bannerDismissed) return;
-  const banner = $('critical-banner');
-  const txt    = $('banner-text');
-  const crit   = alertas.find(a=>a.tipo==='critica');
-  if (banner) banner.classList.toggle('hidden', !crit);
-  if (txt && crit) txt.textContent = `${crit.titulo}: ${crit.desc}`;
 }
 
 /* ============================================================
-   EXPORT CSV (simulado)
+   renderCriticalBanner — eliminado (alertas solo en dashboard)
+   ============================================================ */
+
+/* ============================================================
+   EXPORT CSV — estructura LECTURA_ENERGIA
    ============================================================ */
 function exportCSV() {
-  const rows = [['Fecha','Energía (kWh)','Voltaje (V)','Estado'], ...HIST_DATA.map(r=>[r.fecha,r.kwh,r.v,r.estado])];
+  const rows = [
+    ['fecha_hora','voltaje_V','corriente_A','potencia_W','bateria_pct'],
+    ...HIST_DATA.map(r=>[r.fecha, r.v, r.c, r.w, r.pct])
+  ];
   const csv = rows.map(r=>r.join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'sylphen_historial.csv';
+  a.download = 'sylphen_lectura_energia.csv';
   a.click();
 }
 
@@ -562,26 +546,6 @@ function setupEvents() {
     navTo('screen-inicio');
     initInicio();
   };
-
-  /* Campana → alertas */
-  $('btn-bell').onclick = () => switchTab('alertas');
-
-  /* Ver todas las alertas */
-  $('btn-ver-alertas').onclick = () => switchTab('alertas');
-
-  /* Banner */
-  $('btn-banner-close').onclick  = () => { S.bannerDismissed=true; $('critical-banner').classList.add('hidden'); };
-  $('btn-banner-alerts').onclick = () => { S.bannerDismissed=true; $('critical-banner').classList.add('hidden'); switchTab('alertas'); };
-
-  /* Filtros alertas */
-  document.querySelectorAll('.filter-pill').forEach(btn => {
-    btn.onclick = () => {
-      S.filter = btn.dataset.filter;
-      document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      if (S.data) renderAlerts(S.data.alertas||[]);
-    };
-  });
 
   /* Export CSV */
   $('btn-export').onclick = exportCSV;
