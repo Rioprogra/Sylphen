@@ -12,47 +12,49 @@ const BG_SRC     = `data:image/png;base64,${BG_B64}`;
 
 /* ---- CONFIGURACIÓN ---- */
 const CFG = {
-  USE_API: false,
-  API_URL: '/api/datos-actuales',
+  USE_API: true,
+  API_URL:          'http://localhost:8080/api/lectura/actual',
+  API_ESTADO:       'http://localhost:8080/api/estado',
+  API_DISPOSITIVOS: 'http://localhost:8080/api/dispositivos',
+  API_HISTORIAL:    'http://localhost:8080/api/lecturas',
+  API_LOGIN:        'http://localhost:8080/api/auth/login',
+  API_REGISTRO:     'http://localhost:8080/api/auth/registro',
   POLL_MS: 10000,
   V_MAX: 4.20, V_MIN: 3.00, V_CRIT: 3.20,
   BAT_NORMAL: 61, BAT_WARN: 30, BAT_CRIT: 15,
 };
 
+/* mapLectura — traduce camelCase del backend al snake_case interno del frontend */
+function mapLectura(api) {
+  return {
+    voltaje:            api.voltaje,
+    corriente:          api.corriente,
+    potencia:           api.potencia,
+    energia_hoy_kwh:    api.energiaHoyKwh    || 0.31,
+    bateria_pct:        api.bateriaPorcentaje,
+    bateria_estado:     api.bateriaEstado    || 'cargando',
+    bateria_tiempo_min: api.bateriaTiempoMin || 84,
+    esp32_online:       api.esp32Online      ?? true,
+    lectura_seg:        api.lecturaSeg       || 8,
+    var_energia_pct:    api.varEnergiaPct    || 0,
+  };
+}
+
 /* ---- USUARIO ACTUAL (simula sesión) ---- */
 const USER = {
-  nombre: 'Mariano Salomón Cristian Jahaziel',
-  iniciales: 'MJ',
-  rol: 'administrador',
+  nombre:       'Mariano Salomón Cristian Jahaziel',
+  iniciales:    'MJ',
+  rol:          'administrador',
+  sessionToken: null, // se asigna al hacer login real
 };
 
-/* ---- DATOS SIMULADOS ---- */
-const BASE_DATA = {
-  voltaje: 3.89, corriente: 1.24, potencia: 4.83,
-  energia_hoy_kwh: 0.31, bateria_pct: 78,
-  bateria_estado: 'cargando', bateria_tiempo_min: 84,
-  esp32_online: true, lectura_seg: 8,
-  var_energia_pct: 12,
+/* ---- DATOS OFFLINE (solo cuando el backend no responde) ---- */
+const OFFLINE_DATA = {
+  voltaje: null, corriente: null, potencia: null,
+  energia_hoy_kwh: null, bateria_pct: null,
+  bateria_estado: 'sin_datos', bateria_tiempo_min: null,
+  esp32_online: false, lectura_seg: null, var_energia_pct: null,
 };
-
-const HIST_DATA = [
-  { fecha:'09/06/2026 14:32', v:'3.89', c:'1.24', w:'4.83', pct:78 },
-  { fecha:'09/06/2026 10:15', v:'3.85', c:'1.18', w:'4.54', pct:72 },
-  { fecha:'08/06/2026 16:40', v:'3.91', c:'1.31', w:'5.12', pct:85 },
-  { fecha:'08/06/2026 09:05', v:'3.78', c:'0.98', w:'3.70', pct:55 },
-  { fecha:'07/06/2026 15:20', v:'3.21', c:'0.42', w:'1.35', pct:18 },
-  { fecha:'07/06/2026 08:00', v:'3.90', c:'1.28', w:'4.99', pct:80 },
-  { fecha:'06/06/2026 13:45', v:'3.88', c:'1.22', w:'4.73', pct:76 },
-  { fecha:'05/06/2026 11:30', v:'3.05', c:'0.10', w:'0.30', pct:5  },
-  { fecha:'04/06/2026 17:00', v:'3.92', c:'1.35', w:'5.29', pct:88 },
-];
-
-const CHART_HOURS = [
-  { h:'06h', w:0.4 }, { h:'07h', w:1.2 }, { h:'08h', w:2.1 },
-  { h:'09h', w:3.4 }, { h:'10h', w:4.2 }, { h:'11h', w:4.8 },
-  { h:'12h', w:4.6 }, { h:'13h', w:4.3 }, { h:'14h', w:3.9 },
-  { h:'15h', w:3.1 }, { h:'16h', w:2.2 }, { h:'17h', w:1.0 },
-];
 
 /* ---- ESTADO APP ---- */
 const S = {
@@ -131,47 +133,101 @@ function initAssets() {
    P1 — INICIO PÚBLICO
    ============================================================ */
 function initInicio() {
-  const data = S.data || BASE_DATA;
-  const dot = $('inicio-dot');
-  const stTx = $('inicio-status-text');
-  if (dot && stTx) {
-    if (data.esp32_online) { dot.classList.remove('offline'); stTx.textContent = 'Sistema activo · Kiosco UTCJJ'; }
-    else                   { dot.classList.add('offline');    stTx.textContent = 'Sistema sin conexión'; }
-  }
-  const pctEl = $('inicio-bat-pct');
-  if (pctEl) pctEl.textContent = data.esp32_online ? `${Math.round(data.bateria_pct)}%` : '—';
+  // Llama directo a /api/estado — no depende de S.data
+  fetch(CFG.API_ESTADO)
+    .then(r => r.json())
+    .then(data => {
+      const online = data.sistemaEstado === 'activo';
+      const pct    = data.bateriaPorcentaje;
+      const dot    = $('inicio-dot');
+      const stTx   = $('inicio-status-text');
+      const pctEl  = $('inicio-bat-pct');
+      if (dot)  dot.classList.toggle('offline', !online);
+      if (stTx) stTx.textContent = online ? 'Sistema activo · Kiosco UTCJ' : 'Sistema sin conexión';
+      if (pctEl) {
+        pctEl.textContent = pct != null ? `${Math.round(pct)}%` : '—';
+        pctEl.style.color = online ? 'var(--green-light)' : 'var(--red-light)';
+      }
+    })
+    .catch(() => {
+      // Backend apagado
+      const dot  = $('inicio-dot');
+      const stTx = $('inicio-status-text');
+      const pctEl = $('inicio-bat-pct');
+      if (dot)  { dot.classList.add('offline'); }
+      if (stTx) stTx.textContent = 'Sin conexión con el servidor';
+      if (pctEl){ pctEl.textContent = '—'; pctEl.style.color = 'var(--red-light)'; }
+    });
 }
 
 /* ============================================================
    P2 — AUTH
    ============================================================ */
 function initAuth() {
+
+  /* ---- REGISTRAR ---- */
   $('btn-registrar').onclick = () => {
-    const nombre = $('reg-nombre').value.trim();
+    const nombre  = $('reg-nombre').value.trim();
     const usuario = $('reg-usuario').value.trim();
-    const pass = $('reg-pass').value.trim();
+    const pass    = $('reg-pass').value.trim();
     if (!nombre || !usuario || !pass) {
-      [ ['reg-nombre',nombre], ['reg-usuario',usuario], ['reg-pass',pass] ]
+      [['reg-nombre',nombre],['reg-usuario',usuario],['reg-pass',pass]]
         .forEach(([id,v]) => {
-          if (!v) { const el=$(id); el.style.outline='1px solid var(--red)'; setTimeout(()=>{el.style.outline=''},1500); }
+          if (!v) { const el=$(id); el.style.outline='1px solid var(--red)'; setTimeout(()=>el.style.outline='',1500); }
         });
       return;
     }
-    navTo('screen-dashboard');
-    initDashboard();
+    if (CFG.USE_API) {
+      fetch(CFG.API_REGISTRO, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, usuario, correo: usuario+'@sylphen.com', password: pass })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.exito) {
+          USER.nombre    = nombre;
+          USER.iniciales = nombre.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+          navTo('screen-dashboard'); initDashboard();
+        } else { alert(res.mensaje || 'Error al registrar'); }
+      })
+      .catch(() => { navTo('screen-dashboard'); initDashboard(); });
+    } else {
+      navTo('screen-dashboard'); initDashboard();
+    }
   };
+
+  /* ---- INICIAR SESIÓN ---- */
   $('btn-login').onclick = () => {
     const usuario = $('log-usuario').value.trim();
-    const pass = $('log-pass').value.trim();
+    const pass    = $('log-pass').value.trim();
     if (!usuario || !pass) {
-      [ ['log-usuario',usuario], ['log-pass',pass] ]
+      [['log-usuario',usuario],['log-pass',pass]]
         .forEach(([id,v]) => {
-          if (!v) { const el=$(id); el.style.outline='1px solid var(--red)'; setTimeout(()=>{el.style.outline=''},1500); }
+          if (!v) { const el=$(id); el.style.outline='1px solid var(--red)'; setTimeout(()=>el.style.outline='',1500); }
         });
       return;
     }
-    navTo('screen-dashboard');
-    initDashboard();
+    if (CFG.USE_API) {
+      fetch(CFG.API_LOGIN, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario, password: pass })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.exito) {
+          USER.nombre       = res.nombre  || usuario;
+          USER.rol          = res.rol     || 'usuario';
+          USER.sessionToken = res.sessionToken || null;
+          USER.iniciales    = USER.nombre.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+          navTo('screen-dashboard'); initDashboard();
+        } else { alert(res.mensaje || 'Usuario o contraseña incorrectos'); }
+      })
+      .catch(() => { navTo('screen-dashboard'); initDashboard(); });
+    } else {
+      navTo('screen-dashboard'); initDashboard();
+    }
   };
 }
 
@@ -261,24 +317,24 @@ function toggleDrawer() {
 /* ============================================================
    POLLING CYCLE
    ============================================================ */
+/* Estado offline — se usa cuando el backend no responde */
+
 function poll() {
-  if (CFG.USE_API) {
-    fetch(CFG.API_URL, { headers:{ Authorization:`Bearer ${localStorage.getItem('sylphen_token')||''}` } })
-      .then(r=>r.json()).then(d=>{ actualizarDashboard(d); initInicio(); })
-      .catch(()=>{ actualizarDashboard({...BASE_DATA,esp32_online:false}); initInicio(); });
-  } else {
-    const d = simVariation();
-    actualizarDashboard(d);
-    initInicio();
-  }
+  fetch(CFG.API_URL)
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(apiData => {
+      const d = mapLectura(apiData);
+      actualizarDashboard(d);
+      initInicio();
+    })
+    .catch(err => {
+      console.warn('[Sylphen] Backend offline:', err.message);
+      actualizarDashboard(OFFLINE_DATA);
+      initInicio();
+    });
 }
 
-function simVariation() {
-  const d = () => (Math.random()-.5)*.08;
-  const v = Math.min(CFG.V_MAX, Math.max(CFG.V_CRIT, +(BASE_DATA.voltaje+d()*.3).toFixed(2)));
-  const c = Math.max(0, +(BASE_DATA.corriente+d()).toFixed(2));
-  return { ...BASE_DATA, voltaje:v, corriente:c, potencia:+(v*c).toFixed(2), lectura_seg:Math.floor(Math.random()*9)+1 };
-}
+function simVariation() { return OFFLINE_DATA; } // legacy — ya no se usa
 
 /* ============================================================
    computeAlerts() — genera alertas dinámicas desde el estado real
@@ -402,32 +458,55 @@ function renderGeneration(data, sin) {
 }
 
 /* ============================================================
-   renderBarChart() — SVG
+   renderBarChart() — SVG con datos reales de /api/lecturas
    ============================================================ */
 function renderBarChart() {
+  fetch(CFG.API_HISTORIAL)
+    .then(r => r.json())
+    .then(lecturas => {
+      if (!lecturas || lecturas.length === 0) {
+        const svg = $('bar-chart');
+        const labelsEl = $('chart-labels');
+        if (svg) svg.innerHTML = '';
+        if (labelsEl) labelsEl.innerHTML = '<span class="chart-lbl" style="flex:1;text-align:center;color:rgba(255,255,255,0.28);font-style:italic;">Sin datos de producción aún</span>';
+        return;
+      }
+      const datos = [...lecturas].reverse().slice(-12).map(l => ({
+        w: parseFloat(l.potencia) || 0,
+        h: l.fechaHora ? new Date(l.fechaHora).toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'}) : '—'
+      }));
+      dibujarBarras(datos);
+    })
+    .catch(() => {
+      const svg = $('bar-chart');
+      const labelsEl = $('chart-labels');
+      if (svg) svg.innerHTML = '';
+      if (labelsEl) labelsEl.innerHTML = '<span class="chart-lbl" style="flex:1;text-align:center;color:rgba(240,149,149,0.5);font-style:italic;">Sin conexión con el servidor</span>';
+    });
+}
+
+function dibujarBarras(data) {
   const svg = $('bar-chart');
   const labelsEl = $('chart-labels');
   if (!svg || !labelsEl) return;
 
-  const data = CHART_HOURS;
-  const maxW = Math.max(...data.map(d=>d.w), 0.1);
+  const maxW = Math.max(...data.map(d => d.w), 0.1);
   const W = 480, H = 100, pad = 2;
-  const barW = (W - pad*(data.length+1)) / data.length;
+  const barW = (W - pad * (data.length + 1)) / data.length;
 
   svg.innerHTML = '';
   data.forEach((d, i) => {
     const barH = (d.w / maxW) * (H - 12);
-    const x = pad + i*(barW+pad);
+    const x = pad + i * (barW + pad);
     const y = H - barH;
-
-    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('x', x.toFixed(1));
     rect.setAttribute('y', y.toFixed(1));
     rect.setAttribute('width', barW.toFixed(1));
     rect.setAttribute('height', barH.toFixed(1));
     rect.setAttribute('rx', '2');
     rect.setAttribute('fill', '#1D9E75');
-    rect.setAttribute('opacity', i === data.length-1 ? '1' : '0.65');
+    rect.setAttribute('opacity', i === data.length - 1 ? '1' : '0.65');
     svg.appendChild(rect);
   });
 
@@ -446,23 +525,36 @@ function renderBarChart() {
 function renderHistorial() {
   const tbody = $('hist-tbody');
   if (!tbody) return;
-  tbody.innerHTML = '';
-  HIST_DATA.forEach(row => {
-    const batPct = row.pct;
-    let stCls, stLabel;
-    if (batPct <= 15)       { stCls='status-err';  stLabel=`${batPct}% ⚠`; }
-    else if (batPct <= 30)  { stCls='status-warn'; stLabel=`${batPct}%`; }
-    else                    { stCls='status-ok';   stLabel=`${batPct}%`; }
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${row.fecha}</td>
-      <td>${row.v} V</td>
-      <td>${row.c} A</td>
-      <td>${row.w} W</td>
-      <td><span class="${stCls}">${stLabel}</span></td>`;
-    tbody.appendChild(tr);
-  });
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.3);padding:16px;">Cargando...</td></tr>';
+
+  fetch(CFG.API_HISTORIAL)
+    .then(r => r.json())
+    .then(rows => {
+      tbody.innerHTML = '';
+      if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.28);padding:24px;font-style:italic;">Sin registros aún — los datos aparecerán cuando el ESP32 envíe lecturas</td></tr>';
+        return;
+      }
+      rows.forEach(row => {
+        const pct = row.bateriaPorcentaje;
+        const stCls = pct <= 15 ? 'status-err' : pct <= 30 ? 'status-warn' : 'status-ok';
+        const fecha = row.fechaHora ? row.fechaHora.replace('T', ' ').substring(0,16) : '—';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${fecha}</td>
+          <td>${fmt(row.voltaje)} V</td>
+          <td>${fmt(row.corriente)} A</td>
+          <td>${fmt(row.potencia)} W</td>
+          <td><span class="${stCls}">${pct}%</span></td>`;
+        tbody.appendChild(tr);
+      });
+    })
+    .catch(() => {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:rgba(240,149,149,0.6);padding:24px;">Sin conexión con el servidor</td></tr>';
+    });
 }
+
+function renderHistorialLocal(tbody) { /* eliminado — ya no se usa */ }
 
 /* ============================================================
    renderDispositivos()
@@ -470,28 +562,35 @@ function renderHistorial() {
 function renderDispositivos() {
   const grid = $('devices-grid');
   if (!grid) return;
-  const data = S.data || BASE_DATA;
-  const devs = [
-    { name:'Arduino Uno',  icon:devIcon('cpu'),     online:data.esp32_online, detail:'Lectura INA226 · I²C' },
-    { name:'ESP32',        icon:devIcon('wifi'),    online:data.esp32_online, detail:`WiFi · Envío cada ${data.lectura_seg||8}s` },
-    { name:'Sensor INA226',icon:devIcon('activity'),online:data.esp32_online, detail:`${fmt(data.voltaje)} V · ${fmt(data.corriente,2)} A` },
-    { name:'Batería 18650',icon:devIcon('battery'), online:true,             detail:`${Math.round(data.bateria_pct||0)}% · ${fmt(data.voltaje)} V` },
-  ];
-  grid.innerHTML = '';
-  devs.forEach(d => {
-    const card = document.createElement('div');
-    const st = d.online?'online':'offline';
-    card.className = `device-card ${st}`;
-    card.innerHTML = `
-      <div class="device-icon-wrap ${st}">${d.icon}</div>
-      <p class="device-name">${d.name}</p>
-      <span class="device-status-badge ${st}">${d.online?'En línea':'Sin respuesta'}</span>
-      <p class="device-detail">${d.detail}</p>`;
-    grid.appendChild(card);
-  });
-  const ts = $('devices-timestamp');
-  if (ts) ts.textContent = `Última actualización hace ${data.lectura_seg||'—'}s`;
+
+  if (CFG.USE_API) {
+    // Obtener dispositivos reales del backend
+    fetch(CFG.API_DISPOSITIVOS)
+      .then(r => r.json())
+      .then(devs => {
+        grid.innerHTML = '';
+        const iconMap = { microcontrolador:'cpu', comunicacion:'wifi', sensor:'activity', almacenamiento:'battery' };
+        devs.forEach(d => {
+          const st = d.estado === 'ONLINE' ? 'online' : 'offline';
+          const card = document.createElement('div');
+          card.className = `device-card ${st}`;
+          card.innerHTML = `
+            <div class="device-icon-wrap ${st}">${devIcon(iconMap[d.tipo]||'cpu')}</div>
+            <p class="device-name">${d.nombre}</p>
+            <span class="device-status-badge ${st}">${d.estado === 'ONLINE' ? 'En línea' : 'Sin respuesta'}</span>
+            <p class="device-detail">${d.detalle||d.tipo}</p>`;
+          grid.appendChild(card);
+        });
+        const ts = $('devices-timestamp');
+        if (ts) ts.textContent = 'Datos del servidor Spring Boot';
+      })
+      .catch(() => renderDispositivosLocal());  // fallback si el backend falla
+  } else {
+    renderDispositivosLocal();
+  }
 }
+
+function renderDispositivosLocal() { /* eliminado — dispositivos solo desde MySQL */ }
 
 function devIcon(type) {
   const icons = {
@@ -517,18 +616,28 @@ function renderTopbarStatus(online) {
    ============================================================ */
 
 /* ============================================================
-   EXPORT CSV — estructura LECTURA_ENERGIA
+   EXPORT CSV — datos reales de /api/lecturas
    ============================================================ */
 function exportCSV() {
-  const rows = [
-    ['fecha_hora','voltaje_V','corriente_A','potencia_W','bateria_pct'],
-    ...HIST_DATA.map(r=>[r.fecha, r.v, r.c, r.w, r.pct])
-  ];
-  const csv = rows.map(r=>r.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'sylphen_lectura_energia.csv';
-  a.click();
+  fetch(CFG.API_HISTORIAL)
+    .then(r => r.json())
+    .then(rows => {
+      if (!rows || rows.length === 0) {
+        alert('No hay registros para exportar');
+        return;
+      }
+      const header = ['fecha_hora','voltaje_V','corriente_A','potencia_W','bateria_pct'];
+      const data = rows.map(r => [
+        r.fechaHora ? r.fechaHora.replace('T',' ').substring(0,19) : '—',
+        r.voltaje, r.corriente, r.potencia, r.bateriaPorcentaje
+      ]);
+      const csv = [header, ...data].map(r => r.join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = 'sylphen_lectura_energia.csv';
+      a.click();
+    })
+    .catch(() => alert('No se pudo conectar con el servidor para exportar'));
 }
 
 /* ============================================================
@@ -542,9 +651,25 @@ function setupEvents() {
   $('btn-hamburger').onclick = toggleDrawer;
   $('sidebar-overlay').onclick = toggleDrawer;
   $('btn-logout').onclick = () => {
-    if (S.pollTimer) clearInterval(S.pollTimer);
-    navTo('screen-inicio');
-    initInicio();
+    const doLogout = () => {
+      if (S.pollTimer) clearInterval(S.pollTimer);
+      USER.sessionToken = null;
+      navTo('screen-inicio');
+      initInicio();
+    };
+
+    // Registrar LOGOUT en HISTORIAL_LOGIN via backend
+    if (CFG.USE_API && USER.sessionToken) {
+      fetch('http://localhost:8080/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionToken: USER.sessionToken })
+      })
+      .then(() => doLogout())
+      .catch(() => doLogout()); // cerrar sesión aunque falle el backend
+    } else {
+      doLogout();
+    }
   };
 
   /* Export CSV */
@@ -562,5 +687,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initAuth();
   setupEvents();
   initInicio();
-  console.info('[Sylphen] Listo. Modo: datos simulados. Para API real: CFG.USE_API = true');
+  console.info('[Sylphen] Listo. Modo:', CFG.USE_API ? 'API REAL → localhost:8080' : 'datos simulados');
 });
